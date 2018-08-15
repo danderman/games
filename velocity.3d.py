@@ -31,25 +31,33 @@ def update(dt):
 				g.image=srgate
 
 	bufnext = bufpos + 1
-	bufnext = bufnext % len(pbuf)
+	bufnext = bufnext % bufsize
 	bufprev = bufpos - 1
 	if bufprev == -1:
-		bufprev = len(pbuf) -1
+		bufprev = bufsize -1
 
-	pbuf[bufpos] = mouse_pos
-	pos.append(p.sprite.Sprite(img=pl, x=width//2-radius, y=pbuf[bufpos], batch=lines))
-	pdbuf[bufpos] = mouse_pos - pbuf[bufprev]
-	vbuf[bufpos] = sum(pdbuf) / len(pdbuf) + height / 2
-	v.append(p.sprite.Sprite(img=vl, x=width//2-radius, y=vbuf[bufpos], batch=lines))
-	vdbuf[bufpos] = 3 * (vbuf[bufpos] - vbuf[bufprev]) # straight acceleration isn't responsive enough
-	abuf[bufpos] = sum(vdbuf) / len(vdbuf) + height / 2
-	a.append(p.sprite.Sprite(img=al, x=width//2-radius, y=abuf[bufpos], batch=lines))
+	x_pbuf[bufpos] = mousex_pos
+	y_pbuf[bufpos] = mousey_pos
+	pos.append(p.sprite.Sprite(img=pl, x=width//2-radius, y=y_pbuf[bufpos], batch=lines))
+	x_pdbuf[bufpos] = mousex_pos - x_pbuf[bufprev]
+	y_pdbuf[bufpos] = mousey_pos - y_pbuf[bufprev]
+	x_vbuf[bufpos] = sum(x_pdbuf) / bufsize + height / 2
+	y_vbuf[bufpos] = sum(y_pdbuf) / bufsize + height / 2
+	v.append(p.sprite.Sprite(img=vl, x=width//2-radius, y=y_vbuf[bufpos], batch=lines))
+	x_vdbuf[bufpos] = 3 * (x_vbuf[bufpos] - x_vbuf[bufprev]) # straight acceleration isn't responsive enough
+	y_vdbuf[bufpos] = 3 * (y_vbuf[bufpos] - y_vbuf[bufprev]) # straight acceleration isn't responsive enough
+	x_abuf[bufpos] = sum(x_vdbuf) / bufsize + height / 2
+	y_abuf[bufpos] = sum(y_vdbuf) / bufsize + height / 2
+	a.append(p.sprite.Sprite(img=al, x=width//2-radius, y=y_abuf[bufpos], batch=lines))
 	if level == 1:
-		me.y = mouse_pos
+		me.x = mousex_pos
+		me.y = mousey_pos
 	elif level == 2:
-		me.y = vbuf[bufpos]
+		me.x = x_vbuf[bufpos]
+		me.y = y_vbuf[bufpos]
 	elif level == 3:
-		me.y = abuf[bufpos]
+		me.x = x_abuf[bufpos]
+		me.y = y_abuf[bufpos]
 
 
 	me.y = constrain(me.y, radius, height-radius)
@@ -103,8 +111,9 @@ def center_image(image):
 
 @screen.event
 def on_mouse_motion(x, y, dx, dy):
-	global mouse_pos
-	mouse_pos += dy
+	global mousey_pos, mousex_pos
+	mousey_pos += dy
+	mousex_pos += dx
 
 p.resource.path = ['/Users/notme/devel/games/res']
 p.resource.reindex()
@@ -131,16 +140,23 @@ size = width, height = screen.width, screen.height
 scaledelta = width / sggate.width / 500
 opacitydelta = 2
 radius = 10
-mouse_pos = 0
+mousey_pos = height//2
+mousex_pos = width//2
 level = 1
 levelcnt = 0
 points = 0
 lastgate = 0
-pbuf = [height/2] * 10
-pdbuf = [0] * 10
-vbuf = [0] * 10
-vdbuf = [0] * 10
-abuf = [0] * 10
+bufsize = 10
+x_pbuf = [height/2] * bufsize
+x_pdbuf = [0] * bufsize
+x_vbuf = [0] * bufsize
+x_vdbuf = [0] * bufsize
+x_abuf = [0] * bufsize
+y_pbuf = [height/2] * bufsize
+y_pdbuf = [0] * bufsize
+y_vbuf = [0] * bufsize
+y_vdbuf = [0] * bufsize
+y_abuf = [0] * bufsize
 bufpos = 0
 status = p.text.Label('', x=width//2, y=radius, anchor_x='center')
 upper_left_x = 50

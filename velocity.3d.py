@@ -19,7 +19,7 @@ def update(dt):
 		g.x-=2
 	for g in gates:
 		g.scale -= scaledelta
-		g.opacity += opacitydelta
+		g.opacity = constrain(opacitydelta+g.opacity, 0, 255)
 		if g.scale < 1 and g.image is sbgate:
 			if abs(me.y - g.y) < (g.height/2 - radius):
 				if abs(me.x - g.x) < (g.height/2 - radius):

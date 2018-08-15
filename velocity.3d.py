@@ -132,7 +132,8 @@ def on_draw():
 	status.draw()
 	p.gl.glPolygonMode(p.gl.GL_FRONT_AND_BACK, p.gl.GL_LINE);
 	p.graphics.draw(4, p.gl.GL_POLYGON,
-    	('v2f', (left,top, right, top, right, bottom, left, bottom)))
+    	('v2f', (left,top, right, top, right, bottom, left, bottom)),
+    	('c3B', (254, 254, 0, 254, 254, 0, 254, 254, 0, 254, 254, 0)))
 
 
 def center_image(image):

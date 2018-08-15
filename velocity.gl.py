@@ -96,7 +96,7 @@ def on_mouse_motion(x, y, dx, dy):
 	global mouse_pos
 	mouse_pos += dy
 
-p.resource.path = ['/Users/notme/devel/games/res']
+p.resource.path = ['res']
 p.resource.reindex()
 circ = p.resource.image('circ.png')
 center_image(circ)

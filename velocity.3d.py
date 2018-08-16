@@ -54,17 +54,17 @@ def update(dt):
 
 	g.x_pbuf[bufpos] = g.mousex_pos
 	g.y_pbuf[bufpos] = g.mousey_pos
-	g.pos.append(p.sprite.Sprite(img=g.pl, x=g.width//2-g.radius, y=g.y_pbuf[bufpos], batch=g.lines))
+	g.pos.append(p.sprite.Sprite(img=g.pl, x=g.left, y=g.y_pbuf[bufpos], batch=g.lines))
 	g.x_pdbuf[bufpos] = g.mousex_pos - g.x_pbuf[bufprev]
 	g.y_pdbuf[bufpos] = g.mousey_pos - g.y_pbuf[bufprev]
 	g.x_vbuf[bufpos] = sum(g.x_pdbuf) / g.bufsize + g.center_x
 	g.y_vbuf[bufpos] = sum(g.y_pdbuf) / g.bufsize + g.center_y
-	g.v.append(p.sprite.Sprite(img=g.vl, x=g.width//2-g.radius, y=g.y_vbuf[bufpos], batch=g.lines))
+	g.v.append(p.sprite.Sprite(img=g.vl, x=g.left, y=g.y_vbuf[bufpos], batch=g.lines))
 	g.x_vdbuf[bufpos] = 4 * (g.x_vbuf[bufpos] - g.x_vbuf[bufprev]) # straight acceleration isn't responsive enough
 	g.y_vdbuf[bufpos] = 4 * (g.y_vbuf[bufpos] - g.y_vbuf[bufprev]) # straight acceleration isn't responsive enough
 	g.x_abuf[bufpos] = sum(g.x_vdbuf) / g.bufsize + g.height / 2
 	g.y_abuf[bufpos] = sum(g.y_vdbuf) / g.bufsize + g.height / 2
-	g.a.append(p.sprite.Sprite(img=g.al, x=g.width//2-g.radius, y=g.y_abuf[bufpos], batch=g.lines))
+	g.a.append(p.sprite.Sprite(img=g.al, x=g.left, y=g.y_abuf[bufpos], batch=g.lines))
 	if g.level == 1:
 		g.me.x = g.mousex_pos
 		g.me.y = g.mousey_pos
@@ -106,10 +106,19 @@ def update(dt):
 	for i in range(len(g.a)-1,0,-1):
 		if g.a[i].x < 0:
 			del(g.a[i])
-	if g.levelcnt == 20:
+
+	if g.levelcnt == 10:
+		for gt in g.gates:
+			gt.image = g.sigate
 		g.level = 2
-	elif g.levelcnt == 40:
+		g.lastgate -= 2
+		g.levelcnt += 1
+	elif g.levelcnt == 20:
+		for gt in g.gates:
+			gt.image = g.sigate
 		g.level = 3
+		g.lastgate -= 2
+		g.levelcnt += 1
 	g.status.text = 'Level: %s, Points: %s, Pos: %s, Missed: %s' % (g.level, g.points, g.me.y, g.gatesmissed)
 
 @screen.event
@@ -175,6 +184,8 @@ class Game():
 		self.srgate = p.resource.image('srgate.png')
 		#center_image(srgate)
 		self.sbgate = p.resource.image('sbgate.png')
+		#center_image(sbgate)
+		self.sigate = p.resource.image('sigate.png')
 		#center_image(sbgate)
 
 		self.pl = p.resource.image('pl.png')

@@ -112,7 +112,7 @@ al = p.resource.image('al.png')
 
 size = width, height = screen.width, screen.height
 radius = 10
-mouse_pos = 0
+mouse_pos = height//2
 level = 1
 levelcnt = 0
 points = 0

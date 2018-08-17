@@ -112,16 +112,16 @@ def update(dt):
 	if g.levelcnt == 10:
 		for gt in g.gates:
 			gt.image = g.sigate
-		g.level = 2
+		g.set_level(2)
 		g.lastgate -= 2
 		g.levelcnt += 1
 	elif g.levelcnt == 20:
 		for gt in g.gates:
 			gt.image = g.sigate
-		g.level = 3
+		g.set_level(3)
 		g.lastgate -= 2
 		g.levelcnt += 1
-	g.status.text = 'Level: %s, Points: %s, Missed: %s' % (g.level, g.points, g.gatesmissed)
+	g.status.text = 'Level: %s, Points: %s, Missed: %s/%s' % (g.level, g.points, g.gatesmissed, g.maxgatesmissed)
 
 @window.event
 def on_draw():
@@ -150,6 +150,8 @@ def on_draw():
 		for gt in [x for x in g.gates if x.scale >= 1]:
 			gt.draw()
 		g.status.draw()
+		if g.fademsg is not None:
+			g.fademsg.draw()
 		p.gl.glPolygonMode(p.gl.GL_FRONT_AND_BACK, p.gl.GL_LINE);
 		p.graphics.draw(4, p.gl.GL_POLYGON,
 			('v2f', (g.left, g.top, g.right, g.top, g.right, g.bottom, g.left, g.bottom)),
@@ -164,7 +166,8 @@ def on_mouse_motion(x, y, dx, dy):
 
 @window.event
 def on_mouse_press(x, y, btn, mods):
-	g.play()
+	if g.mode != 'play':
+		g.play()
 
 def constrain(val, minv, maxv):
 	if val < minv:
@@ -198,6 +201,7 @@ class Game():
 		self.center_x, self.center_y = self.width//2, self.height//2
 		msg = 'Click or press space to start'
 		self.startmsg = p.text.Label(msg, font_size=self.width//30, width=int(self.width*.9), align='center', x=self.center_x, y=self.center_y, anchor_x='center', multiline=True)
+		self.fademsg = None
 		self.spritescaledelta = 1-(self.width / self.sggate.width / 1000) #This constant needs to change in inverse relation
 		self.scaledelta = self.spritescaledelta * .00421 # to this one
 		self.opacitydelta = 1
@@ -253,7 +257,23 @@ class Game():
 		image.anchor_x = image.width // 2
 		image.anchor_y = image.height // 2
 
+	def set_level(self, level):
+		self.level = level
+		if level == 2:
+			msg = "Velocity Mode\n\nGet ready!"
+		elif level == 3:
+			msg = "Acceleration Mode\n\nGet ready!"
+		self.fader = 254
+		self.fademsg = p.text.Label(msg, color=(0,0,255,self.fader), font_size=self.width//30, width=int(self.width*.9), align='center', x=self.center_x, y=self.center_y, anchor_x='center', multiline=True)
+		p.clock.schedule_interval(g.fade, 1)
 
+	def fade(self, dt):
+		if self.fader < 17:
+			self.fademsg = None
+			p.clock.unschedule(self.fade)
+		else:
+			self.fader = self.fader // 2
+			self.fademsg.color = (0,0,255,self.fader)
 
 
 

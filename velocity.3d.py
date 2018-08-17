@@ -87,7 +87,7 @@ def update(dt):
 		gate = p.sprite.Sprite(img=g.sbgate, x=int(random.randint(1, g.width-(g.sbgate.width*3))),y=int(random.randint(1, g.height-(g.sbgate.height*3))))
 		#gate = p.sprite.Sprite(img=sbgate, x=1,y=width-(sbgate.width*3))
 		gate.scale = 3
-		gate.opacity = 32
+		gate.opacity = 16
 		gate.x_percent = (gate.x/g.width)
 		gate.y_percent = (gate.y/g.height)
 		gate.left, gate.right, gate.top, gate.bottom=1,g.width-1,g.height-1,1
@@ -200,7 +200,7 @@ class Game():
 		self.startmsg = p.text.Label(msg, font_size=self.width//30, width=int(self.width*.9), align='center', x=self.center_x, y=self.center_y, anchor_x='center', multiline=True)
 		self.spritescaledelta = 1-(self.width / self.sggate.width / 1000) #This constant needs to change in inverse relation
 		self.scaledelta = self.spritescaledelta * .00421 # to this one
-		self.opacitydelta = 2
+		self.opacitydelta = 1
 		self.radius = 10
 		self.maxgatesmissed = 5
 		self.lastgate = 0

@@ -3,10 +3,13 @@ import pyglet as p
 p.options['debug_gl'] = False
 from pyglet.window import key
 
-screen = p.window.Window(850, 850)
+platform = p.window.get_platform()
+screen = platform.get_default_display().get_default_screen()
+
+window = p.window.Window(screen.height - 50, screen.height - 50) # height for both to make it square
 keyboard = key.KeyStateHandler()
-screen.push_handlers(keyboard)
-screen.set_exclusive_mouse(True)
+window.push_handlers(keyboard)
+window.set_exclusive_mouse(True)
 
 def update(dt):
 	if keyboard[key.Q]: sys.exit('You got %s points' % (g.points,))
@@ -120,9 +123,9 @@ def update(dt):
 		g.levelcnt += 1
 	g.status.text = 'Level: %s, Points: %s, Pos: %s, Missed: %s' % (g.level, g.points, g.me.y, g.gatesmissed)
 
-@screen.event
+@window.event
 def on_draw():
-	screen.clear()
+	window.clear()
 	if g.mode == 'start':
 		p.gl.glPolygonMode(p.gl.GL_FRONT_AND_BACK, p.gl.GL_FILL);
 		g.startmsg.draw()
@@ -152,14 +155,14 @@ def on_draw():
 			('v2f', (g.left, g.top, g.right, g.top, g.right, g.bottom, g.left, g.bottom)),
 			('c3B', (254, 254, 0, 254, 254, 0, 254, 254, 0, 254, 254, 0)))
 
-@screen.event
+@window.event
 def on_mouse_motion(x, y, dx, dy):
 	global mousey_pos, mousex_pos
 	if g.mode == 'play':
 		g.mousey_pos += dy
 		g.mousex_pos += dx
 
-@screen.event
+@window.event
 def on_mouse_press(x, y, btn, mods):
 	g.play()
 
@@ -191,7 +194,7 @@ class Game():
 		self.vl = p.resource.image('vl.png')
 		self.al = p.resource.image('al.png')
 
-		self.width, self.height = screen.width, screen.height
+		self.width, self.height = window.width, window.height
 		self.center_x, self.center_y = self.width//2, self.height//2
 		msg = 'Click or press space to start'
 		self.startmsg = p.text.Label(msg, font_size=self.width//30, width=int(self.width*.9), align='center', x=self.center_x, y=self.center_y, anchor_x='center', multiline=True)
@@ -206,10 +209,10 @@ class Game():
 		self.ileft = self.left+self.sggate.width/1.3
 		self.right = self.left + self.width/850*288
 		self.iright = self.right-self.sggate.width/1.3
-		self.bottom = self.width/850*283
-		self.ibottom = self.bottom+self.sggate.width/1.3
-		self.top = self.bottom + self.width/850*288
-		self.itop = self.top-self.sggate.width/1.3
+		self.bottom = self.height/850*283
+		self.ibottom = self.bottom+self.sggate.height/1.3
+		self.top = self.bottom + self.height/850*288
+		self.itop = self.top-self.sggate.height/1.3
 		self.me = p.sprite.Sprite(img=self.circ, x=self.center_x,y=self.center_y)
 		self.lines = p.graphics.Batch()
 

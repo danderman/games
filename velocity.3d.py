@@ -121,7 +121,7 @@ def update(dt):
 		g.level = 3
 		g.lastgate -= 2
 		g.levelcnt += 1
-	g.status.text = 'Level: %s, Points: %s, Pos: %s, Missed: %s' % (g.level, g.points, g.me.y, g.gatesmissed)
+	g.status.text = 'Level: %s, Points: %s, Missed: %s' % (g.level, g.points, g.gatesmissed)
 
 @window.event
 def on_draw():

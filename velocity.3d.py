@@ -1,8 +1,8 @@
 import sys, random
-from math import sqrt
 import pyglet as p
 p.options['debug_gl'] = False
 from pyglet.window import key
+
 screen = p.window.Window(850, 850)
 keyboard = key.KeyStateHandler()
 screen.push_handlers(keyboard)

@@ -59,21 +59,21 @@ def update(dt):
 	g.pos.append(p.sprite.Sprite(img=g.pl, x=g.left, y=g.y_pbuf[bufpos], batch=g.lines))
 	g.x_pdbuf[bufpos] = g.mousex_pos - g.x_pbuf[bufprev]
 	g.y_pdbuf[bufpos] = g.mousey_pos - g.y_pbuf[bufprev]
-	g.x_vbuf[bufpos] = sum(g.x_pdbuf) / g.bufsize + g.center_x
-	g.y_vbuf[bufpos] = sum(g.y_pdbuf) / g.bufsize + g.center_y
+	g.x_vbuf[bufpos] = 4 * sum(g.x_pdbuf) / g.bufsize + g.center_x
+	g.y_vbuf[bufpos] = 4 * sum(g.y_pdbuf) / g.bufsize + g.center_y
 	g.v.append(p.sprite.Sprite(img=g.vl, x=g.left, y=g.y_vbuf[bufpos], batch=g.lines))
 	g.x_vdbuf[bufpos] = 4 * (g.x_vbuf[bufpos] - g.x_vbuf[bufprev]) # straight acceleration isn't responsive enough
 	g.y_vdbuf[bufpos] = 4 * (g.y_vbuf[bufpos] - g.y_vbuf[bufprev]) # straight acceleration isn't responsive enough
 	g.x_abuf[bufpos] = sum(g.x_vdbuf) / g.bufsize + g.height / 2
 	g.y_abuf[bufpos] = sum(g.y_vdbuf) / g.bufsize + g.height / 2
 	g.a.append(p.sprite.Sprite(img=g.al, x=g.left, y=g.y_abuf[bufpos], batch=g.lines))
-	if g.level == 1:
+	if g.control_mode == 'position':
 		g.me.x = g.mousex_pos
 		g.me.y = g.mousey_pos
-	elif g.level == 2:
+	elif g.control_mode == 'velocity':
 		g.me.x = g.x_vbuf[bufpos]
 		g.me.y = g.y_vbuf[bufpos]
-	elif g.level == 3:
+	elif g.control_mode == 'acceleration':
 		g.me.x = g.x_abuf[bufpos]
 		g.me.y = g.y_abuf[bufpos]
 
@@ -109,17 +109,12 @@ def update(dt):
 		if g.a[i].x < 0:
 			del(g.a[i])
 
-	if g.levelcnt == 10:
-		for gt in g.gates:
-			gt.image = g.sigate
-		g.set_level(2)
-		g.lastgate -= 2
-		g.levelcnt += 1
-	elif g.levelcnt == 20:
-		for gt in g.gates:
-			gt.image = g.sigate
-		g.set_level(3)
-		g.lastgate -= 2
+	if g.levelcnt % 10 == 0:
+		g.set_level(g.level + 1)
+		if g.level % 3 == 1:
+			for gt in g.gates:
+				gt.image = g.sigate
+			g.lastgate -= 2
 		g.levelcnt += 1
 	g.status.text = 'Level: %s, Points: %s, Missed: %s/%s' % (g.level, g.points, g.gatesmissed, g.maxgatesmissed)
 
@@ -202,9 +197,6 @@ class Game():
 		msg = 'Click or press space to start'
 		self.startmsg = p.text.Label(msg, font_size=self.width//30, width=int(self.width*.9), align='center', x=self.center_x, y=self.center_y, anchor_x='center', multiline=True)
 		self.fademsg = None
-		self.spritescaledelta = 1-(self.width / self.sggate.width / 1000) #This constant needs to change in inverse relation
-		self.scaledelta = self.spritescaledelta * .00421 # to this one
-		self.opacitydelta = 1
 		self.radius = 10
 		self.maxgatesmissed = 5
 		self.lastgate = 0
@@ -223,8 +215,13 @@ class Game():
 	def play(self):
 		self.mousey_pos = self.center_y
 		self.mousex_pos = self.center_x
-		self.level = 1
-		self.levelcnt = 0
+		self.opacitydelta = 1
+		self.spriteconst = 1000
+		self.scaleconst = .00421
+		self.spritescaledelta = 1-(self.width / self.sggate.width / self.spriteconst) #This constant needs to change in inverse relation
+		self.scaledelta = self.spritescaledelta * self.scaleconst # to this one
+		self.level = 6
+		self.levelcnt = 1
 		self.points = 0
 		self.gatesmissed = 0
 		self.bufsize = bufsize = 10
@@ -244,6 +241,7 @@ class Game():
 		self.v = []
 		self.pos = []
 		self.mode = 'play'
+		self.control_mode = 'position'
 
 	def die(self, prevpoints):
 		msg = 'Game Over\nYou got %s points\n\nClick or press space to start a new game or press \'q\' to quit.' % (prevpoints,)
@@ -259,13 +257,41 @@ class Game():
 
 	def set_level(self, level):
 		self.level = level
+
 		if level == 2:
-			msg = "Velocity Mode\n\nGet ready!"
+			self.set_speed(2)
 		elif level == 3:
+			self.set_speed(3)
+		elif level == 4:
+			msg = "Velocity Mode\n\nGet ready!"
+			self.set_fader_msg(msg)
+			self.control_mode = "velocity"
+			self.set_speed(1)
+		elif level == 5:
+			self.set_speed(2)
+		elif level == 6:
+			self.set_speed(3)
+		elif level == 7:
 			msg = "Acceleration Mode\n\nGet ready!"
+			self.control_mode = "acceleration"
+			self.set_fader_msg(msg)
+			self.set_speed(1)
+		elif level == 8:
+			self.set_speed(2)
+		elif level == 9:
+			self.set_speed(3)
+
+	def set_fader_msg(self, msg):
 		self.fader = 254
 		self.fademsg = p.text.Label(msg, color=(0,0,255,self.fader), font_size=self.width//30, width=int(self.width*.9), align='center', x=self.center_x, y=self.center_y, anchor_x='center', multiline=True)
 		p.clock.schedule_interval(g.fade, 1)
+
+	def set_speed(self, factor):
+		self.opacitydelta = 1 * factor
+		self.spriteconst = 1000/factor
+		self.scaleconst = .00421*factor
+		self.spritescaledelta = 1-(self.width / self.sggate.width / self.spriteconst) #This constant needs to change in inverse relation
+		self.scaledelta = self.spritescaledelta * self.scaleconst # to this one
 
 	def fade(self, dt):
 		if self.fader < 17:

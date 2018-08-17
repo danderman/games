@@ -9,13 +9,12 @@ screen.push_handlers(keyboard)
 screen.set_exclusive_mouse(True)
 
 def update(dt):
-	global g
 	if keyboard[key.Q]: sys.exit('You got %s points' % (g.points,))
 	if g.mode == 'start':
 		if keyboard[key.SPACE]:
-			g.mode = 'play'
+			g.play()
 		return
-	if g.gatesmissed > g.maxgatesmissed: g = Game(g.points)
+	if g.gatesmissed > g.maxgatesmissed: g.die(g.points)
 	for l in g.pos:
 		l.x-=2
 	for l in g.v:
@@ -156,12 +155,13 @@ def on_draw():
 @screen.event
 def on_mouse_motion(x, y, dx, dy):
 	global mousey_pos, mousex_pos
-	g.mousey_pos += dy
-	g.mousex_pos += dx
+	if g.mode == 'play':
+		g.mousey_pos += dy
+		g.mousex_pos += dx
 
 @screen.event
 def on_mouse_press(x, y, btn, mods):
-	g.mode = 'play'
+	g.play()
 
 def constrain(val, minv, maxv):
 	if val < minv:
@@ -172,8 +172,7 @@ def constrain(val, minv, maxv):
 		return val
 
 class Game():
-	"""docstring for Game"""
-	def __init__(self, prevpoints):
+	def __init__(self):
 		p.resource.path = ['res']
 		p.resource.reindex()
 		self.mode = 'start'
@@ -194,32 +193,15 @@ class Game():
 
 		self.width, self.height = screen.width, screen.height
 		self.center_x, self.center_y = self.width//2, self.height//2
-		self.startmsg = p.text.Label('Click or press space to start.\nPrevious game points: %s' % (prevpoints,), x=self.center_x, y=self.center_y, anchor_x='center')
+		msg = 'Click or press space to start'
+		self.startmsg = p.text.Label(msg, font_size=self.width//30, width=int(self.width*.9), align='center', x=self.center_x, y=self.center_y, anchor_x='center', multiline=True)
 		self.spritescaledelta = 1-(self.width / self.sggate.width / 1000) #This constant needs to change in inverse relation
 		self.scaledelta = self.spritescaledelta * .00421 # to this one
 		self.opacitydelta = 2
 		self.radius = 10
-		self.mousey_pos = self.center_y
-		self.mousex_pos = self.center_x
-		self.level = 1
-		self.levelcnt = 0
-		self.points = 0
-		self.gatesmissed = 0
 		self.maxgatesmissed = 5
 		self.lastgate = 0
-		self.bufsize = bufsize = 10
-		self.x_pbuf = [self.height/2] * bufsize
-		self.x_pdbuf = [0] * bufsize
-		self.x_vbuf = [0] * bufsize
-		self.x_vdbuf = [0] * bufsize
-		self.x_abuf = [0] * bufsize
-		self.y_pbuf = [self.height/2] * bufsize
-		self.y_pdbuf = [0] * bufsize
-		self.y_vbuf = [0] * bufsize
-		self.y_vdbuf = [0] * bufsize
-		self.y_abuf = [0] * bufsize
-		self.bufpos = 0
-		self.status = p.text.Label('', x=self.width//2, y=self.radius, anchor_x='center')
+		self.status = p.text.Label('', x=self.center_x, y=self.radius, anchor_x='center')
 		self.left = self.width/850*283
 		self.ileft = self.left+self.sggate.width/1.3
 		self.right = self.left + self.width/850*288
@@ -228,12 +210,40 @@ class Game():
 		self.ibottom = self.bottom+self.sggate.width/1.3
 		self.top = self.bottom + self.width/850*288
 		self.itop = self.top-self.sggate.width/1.3
-		self.me = p.sprite.Sprite(img=self.circ, x=self.width/2,y=self.height/2)
+		self.me = p.sprite.Sprite(img=self.circ, x=self.center_x,y=self.center_y)
+		self.lines = p.graphics.Batch()
+
+	def play(self):
+		self.mousey_pos = self.center_y
+		self.mousex_pos = self.center_x
+		self.level = 1
+		self.levelcnt = 0
+		self.points = 0
+		self.gatesmissed = 0
+		self.bufsize = bufsize = 10
+		self.x_pbuf = [self.center_x] * bufsize
+		self.x_pdbuf = [0] * bufsize
+		self.x_vbuf = [0] * bufsize
+		self.x_vdbuf = [0] * bufsize
+		self.x_abuf = [0] * bufsize
+		self.y_pbuf = [self.center_y] * bufsize
+		self.y_pdbuf = [0] * bufsize
+		self.y_vbuf = [0] * bufsize
+		self.y_vdbuf = [0] * bufsize
+		self.y_abuf = [0] * bufsize
+		self.bufpos = 0
 		self.gates = []
 		self.a = []
 		self.v = []
 		self.pos = []
-		self.lines = p.graphics.Batch()
+		self.mode = 'play'
+
+	def die(self, prevpoints):
+		msg = 'Game Over\nYou got %s points\n\nClick or press space to start a new game or press \'q\' to quit.' % (prevpoints,)
+		self.startmsg.text = msg
+		self.startmsg.y = int(self.center_y * 1.2)
+		self.mode = 'start'
+
 
 	def center_image(self,image):
 		"""Sets an image's anchor point to its center"""
@@ -245,6 +255,6 @@ class Game():
 
 
 if __name__ == '__main__':
-	g = Game(0)
+	g = Game()
 	p.clock.schedule_interval(update, 1/60.0)
 	p.app.run()

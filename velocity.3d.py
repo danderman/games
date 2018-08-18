@@ -40,6 +40,8 @@ def update(dt):
 				if g.me.x - g.radius > gt.x and g.me.x + g.radius < gt.x + gt.width:
 					gt.image=g.sggate
 					g.points += 1
+					if g.points % 10 == 0:
+						g.maxgatesmissed += 3
 				else:
 					gt.image=g.srgate
 					g.gatesmissed += 1
@@ -220,7 +222,7 @@ class Game():
 		self.scaleconst = .00421
 		self.spritescaledelta = 1-(self.width / self.sggate.width / self.spriteconst) #This constant needs to change in inverse relation
 		self.scaledelta = self.spritescaledelta * self.scaleconst # to this one
-		self.level = 6
+		self.level = 1
 		self.levelcnt = 1
 		self.points = 0
 		self.gatesmissed = 0
